@@ -11,8 +11,8 @@ int *d{};	//相当于int *d = nullptr
 初始化的写法
 
 ```c++
-int a{1};
-int b = {2};
+int a{1};		// braced-initialization
+int b = {2};	// copy-initialization
 int c = 3;
 
 std::vector<int>vec1{1, 2, 3};
@@ -121,9 +121,7 @@ public:
     }
 };
 Object obj = {7, 8, 9};
-```
-
-```shell
+// 输出
 >> 7 8 9
 ```
 
@@ -140,7 +138,7 @@ int x1 = 2.4;		// a = 2
 int x2 = {2.4}		// error
 char c1 = 1000		// ???
 char c2 = {1000}	// error
-std::vector<int> vec1{1,2,3.5} //error
+std::vector<int> vec1{1,2,3.001} //error
 
 const int x = 1; 	// 注意x是const int
 char c3 = x 		// pass
@@ -148,11 +146,29 @@ char c4 = {x}		// error
 ```
 
 ```c++
-class Object {
+class A {
 public:
-    explicit Object(int a) {}
+    explicit A(int i = 0) : val{i} {}
+    int val;
 };
 
-Object obj(1.5) // error
+class B {
+public:
+    B(int i = 0) : val{i}{}
+    int val;
+};
+
+A a1;			// pass
+B b1;			// pass
+A a2 = {};		// error 隐式转换为拷贝
+B b2 = {};		// pass
+A a3 = 1;		// error 没有从int->A的转换
+B b3 = 1;		// pass
+A a4(1.5);		// warning
+B b4(1.5);		// warning
+A a5 = 1.5;		// error 没有double->A的转换
+B b5 = 1.5;		// pass
+A a6 = {1.5};	// error 
+B b6 = {1.5};
 ```
 

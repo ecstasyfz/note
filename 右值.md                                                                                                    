@@ -1,0 +1,144 @@
+# 右值
+
+```c++
+int x = 1;
+int y = 2;
+int z = x + y;
+string str = "hello";
+string str2 = str.substr(1);
+```
+
+```c++
+string str = "hello";
+string &rstr = str;				// rstr是str的另一个名字
+bool com = (&str == &rstr)		// true
+    
+string &bad1 = "hello";			// 非法
+string &bad2 = str + "";		// 非法
+string &bad3 = str.substr(1);	// 非法
+
+string &&good1 = "hello";		// 合法
+string &&good2 = str + "";		// 合法
+string &&good3 = str.substr(1);	// 合法
+```
+
+---
+
+### 左值引用的用途
+
+1. 给变量起别名
+
+   ```c++
+   auto &alias = rhs;
+   ```
+
+2. 循环
+
+   ```c++
+   for (auto i : x) i++;	// i不变
+   for (auto &i : x) i++;	// i被修改
+   ```
+
+3. 避免复制
+
+   ```c++
+   auto x = find_item(vec); 	// 复制 x不能修改vec
+   auto &x = find_item(vec);	// 返回引用 x可以修改vec
+   ```
+
+---
+
+### 返回引用   
+
+```c++
+LargeType get_first1(vector<LargeType> &vec) return vec[0];
+LargeType &get_first2(vector<LargeType> &vec) return vec[0];
+
+vector<LargeType> vec;
+auto item1 = get_first1(vec);	// 复制 不能修改vec
+auto item2 = get_first2(vec);	// 复制 不能修改vec
+auto &item3 = get_first1(vec);	// 报错
+auto &item4 = get_first2(vec);	// 返回引用 可以修改vec
+```
+
+```c++
+vector<string> str_split(const &string s) {
+    vector<string> v;
+    // ...
+    return v;
+}
+vector<string> v = str_split("abc");
+vector<string> v2;
+v2 = str_split("1,2,3");
+```
+
+```c++
+template <class T> void swap (T& a, T& b) {
+    T c(std::move(a));
+    a=std::move(b);
+    b=std::move(c);
+}
+```
+
+```c++
+// 构造函数 (constructor)
+string str1;
+string str2();
+string str3{};
+// 拷贝构造函数 (copy constructor)
+string str4(str1);
+string str5{str1};
+// 拷贝赋值函数 (copy assignment operator)
+string str6, str7;
+str6 = str1;
+str7 = {str1};
+// 移动构造函数 (move constructor)
+string str8("hello");
+string str9{"hello"};
+string str10(std::move(str1));
+string str11{std::move(str1)};
+// 移动赋值函数 (move assignment operator)
+string str12, str13, str14, str15;
+str12 = "hello";
+str13 = {"hello"};
+str14 = std::move(str1);
+str15 = {str::move(str1)};
+```
+
+
+```c++
+template <class T>
+class Item {
+public:
+    explicit Item(T &initial_value = {})
+        : p_{new T{initial_value}} {}
+    
+    ~Item() {
+        delete p_;
+    }
+    
+    Item(const Item &rhs) {
+        p_ = new T{*rhs.p_};
+    }
+    
+    Item(Item &&rhs)
+        : p_{rhs.p_} {
+            rhs.p_ = nullptr; // Optional
+        }
+    
+    Item &operator=(const Item &rhs) {
+        Item copy = rhs;
+        std::swap(*this, copy);
+        return *this;
+    }
+    
+    Item &operator=(Item &&rhs) {
+        std::swap(p_, rhs.p_);
+        return *this;
+    }
+    
+private:
+    T *p_;
+};
+```
+
